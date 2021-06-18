@@ -155,8 +155,8 @@ describe('POST / (Login)', () => {
   });
 });
 
-describe('GET / (Jokes)', () => {
-  it('Authorized User', async () => {
+describe('GET / (Restricted)', () => {
+  it('Authorization - User Jokes (200)', async () => {
     const token = (await request(server).post('/api/auth/login').send({ username: 'Test', password: '1234' })).body.token;
     return request(server).get('/api/jokes')
       .set('Authorization', token)
@@ -167,13 +167,24 @@ describe('GET / (Jokes)', () => {
         expect(body).toMatchObject(data);
       });
   });
-  it('Unauthorized User', () => {
+  it('Authorization - Token Required (401)', () => {
     return request(server).get('/api/jokes')
+      .set('Authorization', '')
       .expect(401)
       .expect('Content-Type', /json/)
       .expect('Content-Length', '28')
       .then(({ body }) => {
         expect(body).toHaveProperty('message', 'token required');
+      });
+  });
+  it('Authorization - Token Invalid (401)', () => {
+    return request(server).get('/api/jokes')
+      .set('Authorization', 'fake')
+      .expect(401)
+      .expect('Content-Type', /json/)
+      .expect('Content-Length', '27')
+      .then(({ body }) => {
+        expect(body).toHaveProperty('message', 'token invalid');
       });
   });
 });
