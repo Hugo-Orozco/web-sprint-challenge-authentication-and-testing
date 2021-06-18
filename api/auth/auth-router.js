@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const auth = require('./auth-model');
 const JWT_SECRET = process.env.JWT_SECRET || 'shh';
+const ROUND = Number(process.env.ROUND) || 8;
 const { checkPayload, checkTaken, checkInvalid } = require('./auth-middleware');
 
 router.post('/register', checkPayload, checkTaken, (req, res, next) => {
@@ -33,7 +34,7 @@ router.post('/register', checkPayload, checkTaken, (req, res, next) => {
       the response body should include a string exactly as follows: "username taken".
   */
   const { username, password } = req.body;
-  const hash = bcrypt.hashSync(password, 8);
+  const hash = bcrypt.hashSync(password, ROUND);
 
   auth.add({ username, password: hash })
     .then(user => {
